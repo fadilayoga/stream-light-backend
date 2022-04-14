@@ -4,32 +4,7 @@ const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 const dbo = require('../db/conn');
 
-router.post('/register', async (req, res) => {
-    try {
-        const salt = await bcrypt.genSalt(10)
-        const hashedPassword = await bcrypt.hash(req.body.password, salt)
-        const dbConnect = dbo.UserModel();
-        const matchDocument = {
-            name: req.body.name,
-            email: req.body.email,
-            password: hashedPassword,
-            age: req.body.age,
-            role: req.body.role,
-            gender: req.body.gender
-        };
-        const result = await dbConnect.create(matchDocument)
-        const {
-            password,
-            ...data
-        } = await result.toJSON()
-        res.send(data)
-    } catch (err) {
-        res.status(201).json({
-            error: 'error when adding user'
-        })
-    }
-})
-
+//login
 router.post('/login', async (req, res) => {
     try {
         const dbConnect = dbo.UserModel();
@@ -53,22 +28,21 @@ router.post('/login', async (req, res) => {
         }, 'secret')
         res.cookie('token', token, {
             httpOnly: true,
-            maxAge: 24 * 60 * 60 * 1000 // 1 day
+            maxAge: 24 * 60 * 60 * 1000, // 1 day        
         })
         res.send({
             message: 'success'
         })
     } catch (err) {
         if (err) {
-            res.status(err.status).json({
-                message: err.message
-            })
+            res.status(err.status).send(err.message)
         } else {
-            res.status(201).json('error login')
+            res.status(201).send('error login')
         }
     }
 })
 
+//authenticate
 router.get('/authenticate', async (req, res) => {
     try {
         const dbConnect = dbo.UserModel();
@@ -84,14 +58,15 @@ router.get('/authenticate', async (req, res) => {
             password,
             ...data
         } = await user.toJSON()
-        res.send(data)
+        res.send(data).end()
     } catch (err) {
         res.status(401).json({
             message: 'unauthenticated'
-        })
+        }).end()
     }
 })
 
+//logout
 router.get('/logout', async (req, res) => {
     res.cookie('token', '', {
         maxAge: 0

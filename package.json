@@ -13,6 +13,7 @@
   "dependencies": {
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.19.1",
+    "connect-history-api-fallback": "^1.6.0",
     "connect-timeout": "^1.9.0",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
@@ -23,7 +24,9 @@
     "moment": "^2.29.1",
     "mongoose": "^6.2.3",
     "mqtt": "^4.3.4",
+    "multer": "^1.4.4",
     "nodemon": "^.0.15",
+    "sharp": "^0.30.3",
     "ws": "^8.4.2"
   },
   "engines": {

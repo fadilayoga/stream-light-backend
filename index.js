@@ -1,5 +1,6 @@
 const express = require('express');
 const app = express();
+const path = require('path')
 const mqtt = require('mqtt');
 const WebSocket = require('ws');
 const WebSocketServer = require('ws').Server;
@@ -11,13 +12,14 @@ const port = process.env.PORT || 3000;
 const cors = require('cors');
 const timeout = require('connect-timeout')
 const cookieParser = require('cookie-parser')
+const history = require('connect-history-api-fallback');
 
 //timeout
 app.use(timeout('5s'))
 //cors
 app.use(cors({
   credentials: true,
-  origin: ['https://staging-wathcr.web.app', 'http://127.0.0.1:8887', 'http://localhost:8080', 'http://192.168.1.5:8080'],
+  origin: ['https://staging-wathcr.web.app', 'http://127.0.0.1:8887', 'http://localhost:8080', 'http://192.168.1.5:8080', 'http://localhost:3000'],
   // allowedHeaders: ['Content-Type', 'Authorization'],
 }))
 app.use(haltOnTimedout)
@@ -29,6 +31,19 @@ app.use(haltOnTimedout)
 app.use(express.json());
 //haltOnTimedout
 app.use(haltOnTimedout)
+//history
+// app.use(history());
+//haltOnTimedout
+app.use(haltOnTimedout)
+//static images
+app.use('/static', express.static(path.join(__dirname, "static")))
+//static vue
+// app.use('/', express.static(path.format({
+//   dir: 'D:\\NodeJS\\stream-light\\dist'
+// })))
+//haltOnTimedout
+app.use(haltOnTimedout)
+
 
 //service-accounts
 var serviceAccount = PRIVATE_KEY;
@@ -51,6 +66,8 @@ app.all('/', function (req, res, next) {
 app.use('/', require('./route/registration-token'))
 app.use('/', require('./route/lighting'))
 app.use('/auth', require('./route/auth'))
+app.use('/users', require('./route/users'))
+app.use('/upload', require('./route/upload'))
 
 //function timeout
 function haltOnTimedout(req, res, next) {

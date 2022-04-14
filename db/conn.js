@@ -31,6 +31,10 @@ const lightingLog = new mongoose.Schema({
 
 const problemLog = new mongoose.Schema({
   lighting: mongoose.Schema.ObjectId,
+  log: {
+    type: mongoose.Schema.ObjectId,
+    ref: 'lighting_log',
+  },
   problem: String,
   solvedId: {
     type: mongoose.Schema.ObjectId,
