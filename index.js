@@ -67,7 +67,6 @@ app.use('/', require('./route/registration-token'))
 app.use('/', require('./route/lighting'))
 app.use('/auth', require('./route/auth'))
 app.use('/users', require('./route/users'))
-app.use('/upload', require('./route/upload'))
 
 //function timeout
 function haltOnTimedout(req, res, next) {

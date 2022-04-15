@@ -7,7 +7,7 @@ const token = new mongoose.Schema({
   registration_ids: String,
   last_modified: {
     type: Date,
-    default: new Date()
+    default: () => Date.now()
   }
 });
 
@@ -25,7 +25,7 @@ const lightingLog = new mongoose.Schema({
   location: Object,
   timestamp: {
     type: Date,
-    default: new Date()
+    default: () => Date.now()
   }
 });
 
@@ -42,14 +42,14 @@ const problemLog = new mongoose.Schema({
   },
   timestamp: {
     type: Date,
-    default: new Date()
+    default: () => Date.now()
   }
 });
 
 const usersSchema = new mongoose.Schema({
   name: {
     type: String,
-    required: true
+    required: true,
   },
   email: {
     type: String,
@@ -70,6 +70,10 @@ const usersSchema = new mongoose.Schema({
   gender: {
     type: String,
     required: true
+  },
+  profilePicture: {
+    type: String,
+    default: null
   }
 });
 

@@ -1,7 +1,11 @@
 const express = require('express')
 const router = express.Router()
+const dbo = require('../db/conn')
 const bcrypt = require('bcryptjs')
-const dbo = require('../db/conn');
+const { runvalidation, validationForm } = require('../validation')
+const { authorization } = require('../middleware/auth')
+const { emailExist } = require('../middleware/users')
+const { upload, getUser, fileTypeErrorHandler, fileSizeLimitErrorHandler, fileUploadHandler } = require('../middleware/fileUpload')
 
 //get
 router.get('/', async (req, res) => {
@@ -9,7 +13,9 @@ router.get('/', async (req, res) => {
         const users = await dbo.UserModel().find().select('-password')
         res.json(users)
     } catch (err) {
-        res.status(500).json({ message: err.message })
+        res.status(500).json({
+            message: err.message
+        })
     }
 })
 
@@ -19,19 +25,21 @@ router.get('/:id', getUser, async (req, res) => {
 })
 
 //create
-router.post('/', async (req, res) => {
+const handler = [authorization, upload.single("file"), fileTypeErrorHandler, fileSizeLimitErrorHandler, validationForm, runvalidation, emailExist, fileUploadHandler]
+router.post('/', handler, async (req, res) => {
     try {
         const salt = await bcrypt.genSalt(10)
         const hashedPassword = await bcrypt.hash(req.body.password, salt)
-        const dbConnect = dbo.UserModel();
+        const dbConnect = dbo.UserModel(); 
         const matchDocument = {
             name: req.body.name,
             email: req.body.email,
             password: hashedPassword,
             age: req.body.age,
             role: req.body.role,
-            gender: req.body.gender
-        };
+            gender: req.body.gender,
+            profilePicture: req.staticFile ? req.staticFile : null
+        };        
         const result = await dbConnect.create(matchDocument)
         const {
             password,
@@ -39,30 +47,28 @@ router.post('/', async (req, res) => {
         } = await result.toJSON()
         res.send(data)
     } catch (err) {
-        res.status(201).json({
-            error: 'error when adding user'
-        })
+        res.status(400).json(err)
     }
 })
 
 //update
 router.patch('/:id', getUser, async (req, res) => {
-    if(req.body.name != null){
+    if (req.body.name != null) {
         res.user.name = req.body.name
     }
-    if(req.body.email != null){
+    if (req.body.email != null) {
         req.user.email = req.body.email
     }
-    if(req.body.password != null){
+    if (req.body.password != null) {
         req.user.password = req.body.password
     }
-    if(req.body.age != null){
+    if (req.body.age != null) {
         req.user.age = req.body.age
     }
-    if(req.body.role != null){
+    if (req.body.role != null) {
         req.user.role = req.body.role
     }
-    if(req.body.gender != null){
+    if (req.body.gender != null) {
         req.user.gender = req.body.gender
     }
 
@@ -70,7 +76,9 @@ router.patch('/:id', getUser, async (req, res) => {
         const updateUser = await res.user.save()
         res.json(updateUser)
     } catch (err) {
-        res.status(400).json({ message: err.message })
+        res.status(400).json({
+            message: err.message
+        })
     }
 })
 
@@ -78,24 +86,14 @@ router.patch('/:id', getUser, async (req, res) => {
 router.delete('/:id', getUser, async (req, res) => {
     try {
         await res.user.deleteOne()
-        res.json({ message: 'Deleted User'})
+        res.json({
+            message: 'Deleted User'
+        })
     } catch (err) {
-        res.status(500).json({ message: err.message })
+        res.status(500).json({
+            message: err.message
+        })
     }
 })
-
-async function getUser(req, res, next) {
-    let user
-    try {
-        user = await dbo.UserModel().findById(req.params.id)        
-        if(user == null) {
-            return res.status(404).json({ message: 'cannot find user' })
-        }
-    } catch (err) {
-        return res.status(500).json({ message: err.message })
-    }
-    res.user = user
-    next()
-}
 
 module.exports = router
