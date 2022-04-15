@@ -5,7 +5,7 @@ const bcrypt = require('bcryptjs')
 const { runvalidation, validationForm } = require('../validation')
 const { authorization } = require('../middleware/auth')
 const { emailExist } = require('../middleware/users')
-const { upload, getUser, fileTypeErrorHandler, fileSizeLimitErrorHandler, fileUploadHandler } = require('../middleware/fileUpload')
+const { upload, getUser, fileTypeErrorHandler, fileSizeLimitErrorHandler, fileUploadHandler, fileUploadErrorhandler } = require('../middleware/fileUpload')
 
 //get
 router.get('/', async (req, res) => {
@@ -25,7 +25,7 @@ router.get('/:id', getUser, async (req, res) => {
 })
 
 //create
-const handler = [authorization, upload.single("file"), fileTypeErrorHandler, fileSizeLimitErrorHandler, validationForm, runvalidation, emailExist, fileUploadHandler]
+const handler = [authorization, runvalidation, upload.single("file"), fileTypeErrorHandler, fileSizeLimitErrorHandler, validationForm, runvalidation, emailExist, fileUploadHandler, fileUploadErrorhandler]
 router.post('/', handler, async (req, res) => {
     try {
         const salt = await bcrypt.genSalt(10)
@@ -39,7 +39,7 @@ router.post('/', handler, async (req, res) => {
             role: req.body.role,
             gender: req.body.gender,
             profilePicture: req.staticFile ? req.staticFile : null
-        };        
+        };
         const result = await dbConnect.create(matchDocument)
         const {
             password,

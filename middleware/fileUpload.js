@@ -1,7 +1,7 @@
 const multer = require('multer')
 const dbo = require('../db/conn')
 const sharp = require('sharp')
-const fs = require('fs')
+const fs = require('fs').promises
 const path = require('path')
 
 const fileFilter = function (req, file, cb) {
@@ -18,9 +18,8 @@ const fileFilter = function (req, file, cb) {
 const storage = multer.diskStorage({
     destination: './uploads/',
     filename: function (req, file, cb) {
-        //req.body is empty...
-        //How could I get the new_file_name property sent from client here?
-        cb(null, file.originalname.replace(/[^0-9a-zA-Z.]/g, '-'));
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
+        cb(null, file.fieldname + '-' + uniqueSuffix)
     }
 });
 
@@ -35,7 +34,7 @@ exports.upload = multer({
 exports.getUser = async function (req, res, next) {
     let user
     try {
-        user = await dbo.UserModel().findById(req.params.id)
+        user = await dbo.UserModel().findById(req.params.id).select('-password')
         if (user == null) {
             return res.status(404).json({
                 message: 'cannot find user'
@@ -52,22 +51,20 @@ exports.getUser = async function (req, res, next) {
 
 exports.fileSizeLimitErrorHandler = function (err, req, res, next) {
     if (err) {
-        res.status(413).json({
+        return res.status(413).json({
             error: err
         })
-    } else {
-        next()
     }
+    next()
 }
 
 exports.fileTypeErrorHandler = function (req, res, next) {
     if (req.fileValidationError) {
-        res.status(422).json({
+        return res.status(422).json({
             error: req.fileValidationError
         });
-    } else {
-        next()
     }
+    next()
 }
 
 exports.fileUploadHandler = async function (req, res, next) {
@@ -82,32 +79,35 @@ exports.fileUploadHandler = async function (req, res, next) {
                         b: 255
                     }
                 })
-                .toFile(`./static/${req.file.filename}`)
-                .then(() => {
-                    fs.readdir(req.file.destination, (err, files) => {
-                        if (err) throw err;
-
-                        // let count = files.length
-                        for (const file of files) {
-                            fs.unlink(path.join(req.file.destination, file), err => {
-                                if (err) throw err;
-                                // count++
-                            });
-                            // if (count == files.length) {
-                            //     req.staticFile = `${req.protocol}://${req.get('host')}/static/${req.file.filename}`                                
-                            // }
-                        }
-                    });
-                })
-                .catch(err => {
-                    throw 'Error storing image'
-                })
+                .toFile(`./static/${req.file.filename}.webp`)
         } catch (err) {
-            res.status(422).json({
-                err
+            return res.status(422).json({
+                err: 'unable to open for write'
             })
         }
-        req.staticFile = `${req.protocol}://${req.get('host')}/static/${req.file.filename}`                                
     }
     next()
+}
+
+exports.fileUploadErrorhandler = async function (req, res, next) {
+    if (req.file) {
+        try {
+            let files = await fs.readdir(req.file.destination)
+            let count = 0
+            for (const file of files) {
+                await fs.unlink(path.join(req.file.destination, file))
+                count++
+                if (count == files.length) {
+                    req.staticFile = `${req.protocol}://${req.get('host')}/static/${req.file.filename}.webp`
+                    next()
+                }
+            }
+        } catch (err) {
+            return res.status(422).json({
+                err: err
+            })
+        }
+    } else {
+        next()
+    }
 }

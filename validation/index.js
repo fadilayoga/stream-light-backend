@@ -1,6 +1,11 @@
-const { check, cookie, validationResult } = require('express-validator')
+const { check, validationResult } = require('express-validator')
 
 exports.runvalidation = (req, res, next) => {
+    if(req.role === 'Admin') {
+        return res.status(401).json({
+            message: 'Unauthorized'
+        })
+    }
     const errors = validationResult(req)
     if (!errors.isEmpty()) {
         return res.status(404).json({
