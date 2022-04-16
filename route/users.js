@@ -1,99 +1,53 @@
 const express = require('express')
 const router = express.Router()
-const dbo = require('../db/conn')
-const bcrypt = require('bcryptjs')
 const { runvalidation, validationForm } = require('../validation')
-const { authorization } = require('../middleware/auth')
-const { emailExist } = require('../middleware/users')
-const { upload, getUser, fileTypeErrorHandler, fileSizeLimitErrorHandler, fileUploadHandler, fileUploadErrorhandler } = require('../middleware/fileUpload')
+const { authorization } = require('../validation/auth')
+const {
+  emailExist,
+  getAllUser,
+  getOneUser,
+  updateUser,
+  deleteUser,
+  createUserHandler,
+  validRole,
+} = require('../controllers/users')
+const {
+  upload,
+  fileTypeErrorHandler,
+  fileSizeLimitErrorHandler,
+  fileUploadHandler,
+  fileUploadErrorhandler,
+} = require('../controllers/fileUpload')
 
 //get
-router.get('/', async (req, res) => {
-    try {
-        const users = await dbo.UserModel().find().select('-password')
-        res.json(users)
-    } catch (err) {
-        res.status(500).json({
-            message: err.message
-        })
-    }
+router.get('/', authorization, runvalidation, getAllUser)
+
+//get-one
+router.get('/:id', getOneUser, (req, res) => {
+  res.send(res.user)
 })
 
-//getOne
-router.get('/:id', getUser, async (req, res) => {
-    res.send(res.user)
-})
+//post
+const handler = [
+  authorization,
+  runvalidation,
+  validRole,
+  upload.single('file'),
+  fileTypeErrorHandler,
+  fileSizeLimitErrorHandler,
+  validationForm,
+  runvalidation,
+  emailExist,
+  fileUploadHandler,
+  fileUploadErrorhandler,
+  createUserHandler,
+]
+router.post('/', handler)
 
-//create
-const handler = [authorization, runvalidation, upload.single("file"), fileTypeErrorHandler, fileSizeLimitErrorHandler, validationForm, runvalidation, emailExist, fileUploadHandler, fileUploadErrorhandler]
-router.post('/', handler, async (req, res) => {
-    try {
-        const salt = await bcrypt.genSalt(10)
-        const hashedPassword = await bcrypt.hash(req.body.password, salt)
-        const dbConnect = dbo.UserModel(); 
-        const matchDocument = {
-            name: req.body.name,
-            email: req.body.email,
-            password: hashedPassword,
-            age: req.body.age,
-            role: req.body.role,
-            gender: req.body.gender,
-            profilePicture: req.staticFile ? req.staticFile : null
-        };
-        const result = await dbConnect.create(matchDocument)
-        const {
-            password,
-            ...data
-        } = await result.toJSON()
-        res.send(data)
-    } catch (err) {
-        res.status(400).json(err)
-    }
-})
-
-//update
-router.patch('/:id', getUser, async (req, res) => {
-    if (req.body.name != null) {
-        res.user.name = req.body.name
-    }
-    if (req.body.email != null) {
-        req.user.email = req.body.email
-    }
-    if (req.body.password != null) {
-        req.user.password = req.body.password
-    }
-    if (req.body.age != null) {
-        req.user.age = req.body.age
-    }
-    if (req.body.role != null) {
-        req.user.role = req.body.role
-    }
-    if (req.body.gender != null) {
-        req.user.gender = req.body.gender
-    }
-
-    try {
-        const updateUser = await res.user.save()
-        res.json(updateUser)
-    } catch (err) {
-        res.status(400).json({
-            message: err.message
-        })
-    }
-})
+//patch
+router.patch('/:id', getOneUser, updateUser)
 
 //delete
-router.delete('/:id', getUser, async (req, res) => {
-    try {
-        await res.user.deleteOne()
-        res.json({
-            message: 'Deleted User'
-        })
-    } catch (err) {
-        res.status(500).json({
-            message: err.message
-        })
-    }
-})
+router.delete('/:id', getOneUser, deleteUser)
 
 module.exports = router
