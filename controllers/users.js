@@ -57,19 +57,24 @@ async function updateUser(req, res, next) {
     res.user.name = req.body.name
   }
   if (req.body.email != null) {
-    req.user.email = req.body.email
+    res.user.email = req.body.email
   }
   if (req.body.password != null) {
-    req.user.password = req.body.password
+    const salt = await bcrypt.genSalt(10)
+    const hashedPassword = await bcrypt.hash(req.body.password, salt)
+    res.user.password = hashedPassword
   }
   if (req.body.age != null) {
-    req.user.age = req.body.age
+    res.user.age = req.body.age
   }
   if (req.body.role != null) {
-    req.user.role = req.body.role
+    res.user.role = req.body.role
   }
   if (req.body.gender != null) {
-    req.user.gender = req.body.gender
+    res.user.gender = req.body.gender
+  }
+  if (req.staticFile != null) {
+    res.user.profilePicture = req.staticFile
   }
 
   try {

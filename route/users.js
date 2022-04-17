@@ -45,9 +45,30 @@ const handler = [
 router.post('/', handler)
 
 //patch
-router.patch('/:id', getOneUser, updateUser)
+router.patch(
+  '/:id',
+  authorization,
+  runvalidation,
+  validRole,
+  upload.single('file'),
+  fileTypeErrorHandler,
+  fileSizeLimitErrorHandler,
+  validationForm,
+  runvalidation,
+  fileUploadHandler,
+  fileUploadErrorhandler,
+  getOneUser,
+  updateUser
+)
 
 //delete
-router.delete('/:id', getOneUser, deleteUser)
+router.delete(
+  '/:id',
+  authorization,
+  runvalidation,
+  validRole,
+  getOneUser,
+  deleteUser
+)
 
 module.exports = router
