@@ -61,12 +61,12 @@ async function updateUser(req, res, next) {
   res.user.age = req.body.age
   res.user.role = req.body.role
   res.user.gender = req.body.gender
-  if (req.body.password != null) {
+  if (req.body.password) {
     const salt = await bcrypt.genSalt(10)
     const hashedPassword = await bcrypt.hash(req.body.password, salt)
     res.user.password = hashedPassword
   }
-  if (req.staticFile != null) {
+  if (req.staticFile) {
     if (res.user.profilePicture) {
       filename = res.user.profilePicture
     }

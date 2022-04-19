@@ -41,7 +41,11 @@ const validationForm = [
   check('password')
     .notEmpty()
     .withMessage('Password is required')
-    .isLength({ min: 5 }),
+    .trim()
+    .notEmpty()
+    .withMessage('White space only not allowed')
+    .isLength({ min: 5 })
+    .withMessage('Password min length 5'),
 
   check('age')
     .notEmpty()
@@ -82,7 +86,12 @@ const validationFormPasswordOptional = [
     .withMessage('Email is invalid'),
 
   check('password')
-    .optional()
+    .optional({
+      nullable: true,      
+    })
+    .trim()
+    .notEmpty()
+    .withMessage('Empty string or whitespace only not allowed')
     .isLength({ min: 5 })
     .withMessage('Password min length 5'),
 
@@ -113,5 +122,5 @@ module.exports = {
   runvalidation,
   runvalidationWithres,
   validationForm,
-  validationFormPasswordOptional
+  validationFormPasswordOptional,
 }
