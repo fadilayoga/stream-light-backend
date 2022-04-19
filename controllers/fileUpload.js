@@ -3,6 +3,8 @@ const sharp = require('sharp')
 const fs = require('fs').promises
 const path = require('path')
 
+sharp.cache(false)
+
 function fileFilter(req, file, cb) {
   const allowedTypes = ['image/jpeg', 'image/png', 'image/gif']
 
@@ -63,14 +65,14 @@ async function fileUploadHandler(req, res, next) {
         .toFile(`./static/${req.file.filename}.webp`)
     } catch (err) {
       return res.status(422).json({
-        err: 'unable to open for write',
+        err: 'ufilename .webpfor write',
       })
     }
   }
   next()
 }
 
-async function fileUploadErrorhandler(req, res, next) {
+async function clearAllProfilePicture(req, res, next) {
   if (req.file) {
     try {
       let files = await fs.readdir(req.file.destination)
@@ -79,9 +81,7 @@ async function fileUploadErrorhandler(req, res, next) {
         await fs.unlink(path.join(req.file.destination, file))
         count++
         if (count == files.length) {
-          req.staticFile = `${req.protocol}://${req.get('host')}/static/${
-            req.file.filename
-          }.webp`
+          req.staticFile = `${req.file.filename}.webp`
           next()
         }
       }
@@ -95,10 +95,23 @@ async function fileUploadErrorhandler(req, res, next) {
   }
 }
 
+const clearOneProfilePicture = async (req, res, next) => {
+  try {
+    await fs.unlink(path.join('./static/', req.deletedFile))
+  } catch (err) {
+    if (err.errno == -4058) {
+      return res.json({ message: 'No file exist calm :)' })
+    }
+    return res.status(500).json(err)
+  }
+  res.json(res.user)
+}
+
 module.exports = {
   upload,
   fileTypeErrorHandler,
   fileSizeLimitErrorHandler,
   fileUploadHandler,
-  fileUploadErrorhandler,
+  clearAllProfilePicture,
+  clearOneProfilePicture,
 }

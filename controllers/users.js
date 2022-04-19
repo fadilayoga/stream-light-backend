@@ -53,38 +53,40 @@ async function createUserHandler(req, res, next) {
 }
 
 async function updateUser(req, res, next) {
-  if (req.body.name != null) {
-    res.user.name = req.body.name
-  }
-  if (req.body.email != null) {
-    res.user.email = req.body.email
-  }
+  let userData
+  let filename
+
+  res.user.name = req.body.name
+  res.user.email = req.body.email
+  res.user.age = req.body.age
+  res.user.role = req.body.role
+  res.user.gender = req.body.gender
   if (req.body.password != null) {
     const salt = await bcrypt.genSalt(10)
     const hashedPassword = await bcrypt.hash(req.body.password, salt)
     res.user.password = hashedPassword
   }
-  if (req.body.age != null) {
-    res.user.age = req.body.age
-  }
-  if (req.body.role != null) {
-    res.user.role = req.body.role
-  }
-  if (req.body.gender != null) {
-    res.user.gender = req.body.gender
-  }
   if (req.staticFile != null) {
+    if (res.user.profilePicture) {
+      filename = res.user.profilePicture
+    }
     res.user.profilePicture = req.staticFile
   }
-
   try {
     const updateUser = await res.user.save()
-    res.json(updateUser)
+    const { password, ...data } = updateUser._doc
+    userData = data
+    if (!filename) {
+      return res.json(data)
+    }
   } catch (err) {
-    res.status(400).json({
+    return res.status(400).json({
       message: err.message,
     })
   }
+  res.user = userData
+  req.deletedFile = filename
+  next()
 }
 
 async function deleteUser(req, res, next) {
@@ -118,8 +120,40 @@ const emailExist = async (req, res, next) => {
 }
 
 const validRole = async (req, res, next) => {
-  if (req.data.role !== 'Superadmin') {
+  if (req.data.role !== 'superadmin') {
     return res.status(401).json({ message: 'Unauthorized' })
+  }
+  next()
+}
+
+const emailExistOtherUser = async (req, res, next) => {
+  try {
+    const emailExist = await dbo
+      .UserModel()
+      .findOne({ _id: { $ne: req.params.id }, email: req.body.email })
+    if (emailExist) {
+      return res.status(400).json({
+        message: 'Email already exist',
+      })
+    }
+  } catch (err) {
+    return res.status(500).json({
+      message: err.message,
+    })
+  }
+  next()
+}
+
+const deleteProfilePicture = async (req, res, next) => {
+  if (!res.user.profilePicture) {
+    return res.status(400).json({ message: 'Image already null' })
+  }
+  req.deletedFile = res.user.profilePicture
+  res.user.profilePicture = null
+  try {
+    await res.user.save()
+  } catch (err) {
+    return res.status(400).json(err)
   }
   next()
 }
@@ -132,4 +166,6 @@ module.exports = {
   deleteUser,
   createUserHandler,
   validRole,
+  emailExistOtherUser,
+  deleteProfilePicture,
 }

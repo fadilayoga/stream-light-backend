@@ -63,11 +63,13 @@ const usersSchema = new mongoose.Schema({
   },
   role: {
     type: String,
+    lowercase: true,
     required: true,
   },
   gender: {
     type: String,
     required: true,
+    lowercase: true
   },
   profilePicture: {
     type: String,

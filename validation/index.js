@@ -26,6 +26,8 @@ const validationForm = [
   check('name')
     .notEmpty()
     .withMessage('Name is required')
+    .isString()
+    .withMessage('Name must be a String')
     .isLength({ min: 5 })
     .withMessage('Min Length 5'),
 
@@ -33,7 +35,6 @@ const validationForm = [
     .notEmpty()
     .withMessage('Email is required')
     .isEmail()
-    .withMessage('Email is invalid')
     .normalizeEmail()
     .withMessage('Email is invalid'),
 
@@ -51,18 +52,66 @@ const validationForm = [
   check('role', 'Role is required')
     .notEmpty()
     .withMessage('Role is required')
-    .isIn(['Superadmin', 'Admin'])
-    .withMessage('Role is invalid'),
+    .isString()
+    .withMessage('Role must be a String')
+    .isIn(['superadmin', 'admin'])
+    .withMessage('Role does contain invalid value'),
 
   check('gender', 'Gender is required')
     .notEmpty()
     .withMessage('Gender is required')
-    .isIn(['Woman', 'Man'])
-    .withMessage('Gender is invalid'),
+    .isString()
+    .withMessage('Gender must be a String')
+    .isIn(['woman', 'man'])
+    .withMessage('Gender does contain invalid value'),
+]
+const validationFormPasswordOptional = [
+  check('name')
+    .notEmpty()
+    .withMessage('Name is required')
+    .isString()
+    .withMessage('Name must be a String')
+    .isLength({ min: 5 })
+    .withMessage('Name min length 5'),
+
+  check('email')
+    .notEmpty()
+    .withMessage('Email is required')
+    .isEmail()
+    .normalizeEmail()
+    .withMessage('Email is invalid'),
+
+  check('password')
+    .optional()
+    .isLength({ min: 5 })
+    .withMessage('Password min length 5'),
+
+  check('age')
+    .notEmpty()
+    .withMessage('Age is required')
+    .isInt({ min: 10, max: 100 })
+    .withMessage('Numbers must be integers in the range 10 to 100'),
+
+  check('role', 'Role is required')
+    .notEmpty()
+    .withMessage('Role is required')
+    .isString()
+    .withMessage('Role must be a String')
+    .isIn(['superadmin', 'admin'])
+    .withMessage('Role does contain invalid value'),
+
+  check('gender', 'Gender is required')
+    .notEmpty()
+    .withMessage('Gender is required')
+    .isString()
+    .withMessage('Gender must be a String')
+    .isIn(['woman', 'man'])
+    .withMessage('Gender does contain invalid value'),
 ]
 
 module.exports = {
   runvalidation,
   runvalidationWithres,
   validationForm,
+  validationFormPasswordOptional
 }

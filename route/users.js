@@ -1,12 +1,14 @@
 const express = require('express')
 const router = express.Router()
-const { runvalidation, validationForm } = require('../validation')
+const { runvalidation, validationForm, validationFormPasswordOptional } = require('../validation')
 const { authorization } = require('../validation/auth')
 const {
   emailExist,
+  emailExistOtherUser,
   getAllUser,
   getOneUser,
   updateUser,
+  deleteProfilePicture,
   deleteUser,
   createUserHandler,
   validRole,
@@ -16,11 +18,12 @@ const {
   fileTypeErrorHandler,
   fileSizeLimitErrorHandler,
   fileUploadHandler,
-  fileUploadErrorhandler,
+  clearAllProfilePicture,
+  clearOneProfilePicture,
 } = require('../controllers/fileUpload')
 
 //get
-router.get('/', authorization, runvalidation, getAllUser)
+router.get('/', authorization, runvalidation, validRole, getAllUser)
 
 //get-one
 router.get('/:id', getOneUser, (req, res) => {
@@ -39,7 +42,7 @@ const handler = [
   runvalidation,
   emailExist,
   fileUploadHandler,
-  fileUploadErrorhandler,
+  clearAllProfilePicture,
   createUserHandler,
 ]
 router.post('/', handler)
@@ -53,12 +56,14 @@ router.patch(
   upload.single('file'),
   fileTypeErrorHandler,
   fileSizeLimitErrorHandler,
-  validationForm,
+  validationFormPasswordOptional,
   runvalidation,
+  emailExistOtherUser,
   fileUploadHandler,
-  fileUploadErrorhandler,
+  clearAllProfilePicture,
   getOneUser,
-  updateUser
+  updateUser,
+  clearOneProfilePicture
 )
 
 //delete
@@ -69,6 +74,17 @@ router.delete(
   validRole,
   getOneUser,
   deleteUser
+)
+
+//delete-user-profile
+router.delete(
+  '/picture/:id',
+  authorization,
+  runvalidation,
+  validRole,
+  getOneUser,
+  deleteProfilePicture,
+  clearOneProfilePicture
 )
 
 module.exports = router
