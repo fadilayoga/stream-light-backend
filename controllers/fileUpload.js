@@ -28,7 +28,7 @@ const upload = multer({
   fileFilter,
   storage: storage,
   limits: {
-    fileSize: 2 * 1000 * 1000,
+    fileSize: 5 * 1000 * 1000,
   },
 })
 
@@ -54,6 +54,7 @@ async function fileUploadHandler(req, res, next) {
   if (req.file) {
     try {
       await sharp(req.file.path)
+        .rotate()
         .resize(300)
         .flatten({
           background: {
