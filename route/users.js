@@ -73,7 +73,8 @@ router.delete(
   runvalidation,
   validRole,
   getOneUser,
-  deleteUser
+  deleteUser,
+  clearOneProfilePicture
 )
 
 //delete-user-profile

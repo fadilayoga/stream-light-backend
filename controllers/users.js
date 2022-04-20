@@ -73,8 +73,8 @@ async function updateUser(req, res, next) {
     res.user.profilePicture = req.staticFile
   }
   try {
-    const updateUser = await res.user.save()
-    const { password, ...data } = updateUser._doc
+    const result = await res.user.save()
+    const { password, ...data } = result._doc
     userData = data
     if (!filename) {
       return res.json(data)
@@ -90,16 +90,29 @@ async function updateUser(req, res, next) {
 }
 
 async function deleteUser(req, res, next) {
+  let filename
+  let userData
+  if (res.user.profilePicture) {
+    filename = res.user.profilePicture
+  }
   try {
-    await res.user.deleteOne()
-    res.json({
-      message: 'Deleted User',
-    })
+    const result = await res.user.deleteOne()
+    const { password, ...data } = result._doc
+    userData = data
+    console.log(data)
+    if (!filename) {
+      return res.json({
+        message: 'Deleted User',
+      })
+    }
   } catch (err) {
     res.status(500).json({
       message: err.message,
     })
   }
+  res.user = userData
+  req.deletedFile = filename
+  next()
 }
 
 const emailExist = async (req, res, next) => {
