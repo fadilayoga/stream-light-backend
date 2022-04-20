@@ -98,8 +98,7 @@ async function deleteUser(req, res, next) {
   try {
     const result = await res.user.deleteOne()
     const { password, ...data } = result._doc
-    userData = data
-    console.log(data)
+    userData = data    
     if (!filename) {
       return res.json({
         message: 'Deleted User',
