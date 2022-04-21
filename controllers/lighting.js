@@ -14,13 +14,33 @@ async function getLighting(req, res, next) {
 async function getLightingLog(req, res, next) {
   try {
     const dbConnect = dbo.getDbLightingLog()
-    const result = await dbConnect.find({}).populate('lighting')
-    const filter = result.filter((result) => result.lighting !== null)
-    req.logs = filter
-    res.json({
-      lighting: req.lightings,
-      lightingLog: req.logs,
-    })
+    const result = await dbConnect.aggregate([
+      { $sort: { timestamp: -1 } },
+      {
+        $group: {
+          _id: '$lighting',
+          logs: {
+            $push: {
+              ldr: '$ldr',
+              location: '$location',
+              timestamp: '$timestamp',
+            },
+          },
+        },
+      },
+      { $project: { logs: { $slice: ['$logs', 20] } } },
+      {
+        $lookup: {
+          from: 'lightings',
+          localField: '_id',
+          foreignField: '_id',
+          as: 'result',
+        },
+      },
+      { $sort: { 'result.name': 1 } },
+      { $match: { result: { $ne: [] } } },
+    ])
+    res.json(result)
   } catch (err) {
     return res.status(404).json({ message: err })
   }

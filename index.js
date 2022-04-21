@@ -25,6 +25,7 @@ app.use(
       'http://127.0.0.1:8887',
       'http://localhost:8080',
       'http://192.168.1.5:8080',
+      'http://192.168.1.5:8081',
       'http://localhost:3000',
     ],
     // allowedHeaders: ['Content-Type', 'Authorization'],
