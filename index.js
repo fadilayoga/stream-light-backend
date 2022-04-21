@@ -110,7 +110,7 @@ function dbConnection() {
             microcontroller.checkDatabase(JSON.parse(message), (message) => {
               wss.clients.forEach(function each(client) {
                 if (client.readyState === WebSocket.OPEN) {
-                  client.send(JSON.stringify({ message }))
+                  client.send(JSON.stringify(message))
                 }
               })
             })

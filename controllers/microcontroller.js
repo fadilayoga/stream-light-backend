@@ -141,9 +141,7 @@ module.exports = {
             }
           }
 
-          this.getAllLightingLog(callback)
-            .then((result) => {})
-            .catch((err) => {})
+          this.broadcastMessage(callback)
           resolve(`Added log with id ${result._id}`)
         }
       })
@@ -221,23 +219,6 @@ module.exports = {
     })
   },
 
-  getAllLighting: function (lightingLog, callback) {
-    return new Promise((resolve, reject) => {
-      const dbConnect = dbo.getDbLighting()
-      dbConnect
-        .find({})
-        .then((result) => {
-          callback({
-            lightingLog,
-            lighting: result,
-          })
-        })
-        .catch(() => {
-          reject('Error fetching listings!')
-        })
-    })
-  },
-
   getOneLightingLog: function (lightingId) {
     return new Promise((resolve, reject) => {
       const dbConnect = dbo.getDbLightingLog()
@@ -251,5 +232,40 @@ module.exports = {
           reject('Error fetching listings!')
         })
     })
+  },
+
+  broadcastMessage: async function (callback) {    
+      try {
+        const dbConnect = dbo.getDbLightingLog()
+        const result = await dbConnect.aggregate([
+          { $sort: { timestamp: 1 } },
+          {
+            $group: {
+              _id: '$lighting',
+              logs: {
+                $push: {
+                  ldr: '$ldr',
+                  location: '$location',
+                  timestamp: '$timestamp',
+                },
+              },
+            },
+          },
+          { $project: { logs: { $slice: ['$logs', -15] } } },
+          {
+            $lookup: {
+              from: 'lightings',
+              localField: '_id',
+              foreignField: '_id',
+              as: 'result',
+            },
+          },
+          { $sort: { 'result.name': 1 } },
+          { $match: { result: { $ne: [] } } },
+        ])
+        callback(result)
+      } catch (err) {
+        console.log(err)
+      }    
   },
 }

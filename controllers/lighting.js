@@ -15,7 +15,7 @@ async function getLightingLog(req, res, next) {
   try {
     const dbConnect = dbo.getDbLightingLog()
     const result = await dbConnect.aggregate([
-      { $sort: { timestamp: -1 } },
+      { $sort: { timestamp: 1 } },
       {
         $group: {
           _id: '$lighting',
@@ -28,7 +28,7 @@ async function getLightingLog(req, res, next) {
           },
         },
       },
-      { $project: { logs: { $slice: ['$logs', 20] } } },
+      { $project: { logs: { $slice: ['$logs', -15] } } },
       {
         $lookup: {
           from: 'lightings',
