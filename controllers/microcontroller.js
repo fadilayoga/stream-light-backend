@@ -1,4 +1,5 @@
 let admin = require('firebase-admin')
+const { ObjectId } = require('mongodb')
 const dbo = require('../models/conn')
 
 module.exports = {
@@ -141,7 +142,7 @@ module.exports = {
             }
           }
 
-          this.broadcastMessage(callback)
+          this.broadcastMessage(lighting._id, callback)
           resolve(`Added log with id ${result._id}`)
         }
       })
@@ -203,22 +204,6 @@ module.exports = {
     })
   },
 
-  getAllLightingLog: function (callback) {
-    return new Promise((resolve, reject) => {
-      const dbConnect = dbo.getDbLightingLog()
-      dbConnect
-        .find({})
-        .populate('lighting')
-        .then((result) => {
-          let filter = result.filter((result) => result.lighting !== null)
-          this.getAllLighting(filter, callback)
-        })
-        .catch(() => {
-          reject('Error fetching listings!')
-        })
-    })
-  },
-
   getOneLightingLog: function (lightingId) {
     return new Promise((resolve, reject) => {
       const dbConnect = dbo.getDbLightingLog()
@@ -234,38 +219,43 @@ module.exports = {
     })
   },
 
-  broadcastMessage: async function (callback) {    
-      try {
-        const dbConnect = dbo.getDbLightingLog()
-        const result = await dbConnect.aggregate([
-          { $sort: { timestamp: 1 } },
-          {
-            $group: {
-              _id: '$lighting',
-              logs: {
-                $push: {
-                  ldr: '$ldr',
-                  location: '$location',
-                  timestamp: '$timestamp',
-                },
+  broadcastMessage: async function (id, callback) {
+    try {
+      const dbConnect = dbo.getDbLightingLog()
+      const result = await dbConnect.aggregate([
+        { $sort: { timestamp: 1 } },
+        {
+          $group: {
+            _id: '$lighting',
+            logs: {
+              $push: {
+                ldr: '$ldr',
+                location: '$location',
+                timestamp: '$timestamp',
               },
             },
           },
-          { $project: { logs: { $slice: ['$logs', -15] } } },
-          {
-            $lookup: {
-              from: 'lightings',
-              localField: '_id',
-              foreignField: '_id',
-              as: 'result',
-            },
+        },
+        { $project: { logs: { $slice: ['$logs', -1] } } },
+        {
+          $lookup: {
+            from: 'lightings',
+            localField: '_id',
+            foreignField: '_id',
+            as: 'result',
           },
-          { $sort: { 'result.name': 1 } },
-          { $match: { result: { $ne: [] } } },
-        ])
-        callback(result)
-      } catch (err) {
-        console.log(err)
-      }    
+        },
+        { $sort: { 'result.name': 1 } },
+        {
+          $match: {
+            result: { $ne: [] },
+            _id: ObjectId(`${id}`),
+          },
+        },
+      ])
+      callback(result)
+    } catch (err) {
+      console.log(err)
+    }
   },
 }
