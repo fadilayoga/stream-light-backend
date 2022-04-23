@@ -9,15 +9,17 @@ const {
   getOneProblemLog,
   updateOneProblemLog
 } = require('../controllers/lighting')
+const { authorization } = require('../validation/auth')
+const { runvalidationAuth } = require('../validation')
 
 //get-problem-logs
-router.get('/problem-logs', paginatedResults)
+router.get('/problem-logs', authorization, runvalidationAuth, paginatedResults)
 
 //get-lighting
-router.post('/problem-logs/:id', getOneProblemLog, getOneLighting, updateOneLighting, updateOneProblemLog)
+router.post('/problem-logs/:id', authorization, runvalidationAuth, getOneProblemLog, getOneLighting, updateOneLighting, updateOneProblemLog)
 
 //get-lighting
-router.get('/lighting-all', getAllLighting, getLightingLog)
+router.get('/lighting-all', authorization, runvalidationAuth, getAllLighting, getLightingLog)
 
 
 module.exports = router

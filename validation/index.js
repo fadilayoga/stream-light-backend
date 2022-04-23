@@ -11,13 +11,48 @@ const runvalidation = (req, res, next) => {
   next()
 }
 
+const runvalidationAuth = (req, res, next) => {
+  const errors = validationResult(req)
+  if (!errors.isEmpty()) {
+    if (errors.errors[0].msg == 'Unauthenticated') {
+      return res.status(403).json({
+        error: errors.errors[0].param,
+        message: errors.errors[0].msg,
+      })
+    } else if (errors.errors[0].msg == 'User not Found') {
+      return res.status(404).json({
+        error: errors.errors[0].param,
+        message: errors.errors[0].msg,
+      })
+    } else {
+      return res.status(500).json({
+        error: errors.errors[0].param,
+        message: errors.errors[0].msg,
+      })
+    }
+  }
+  next()
+}
+
 const runvalidationWithres = (req, res, next) => {
   const errors = validationResult(req)
   if (!errors.isEmpty()) {
-    return res.status(404).json({
-      error: errors.errors[0].param,
-      message: errors.errors[0].msg,
-    })
+    if (errors.errors[0].msg == 'Unauthenticated') {
+      return res.status(403).json({
+        error: errors.errors[0].param,
+        message: errors.errors[0].msg,
+      })
+    } else if (errors.errors[0].msg == 'User not Found') {
+      return res.status(404).json({
+        error: errors.errors[0].param,
+        message: errors.errors[0].msg,
+      })
+    } else {
+      return res.status(500).json({
+        error: errors.errors[0].param,
+        message: errors.errors[0].msg,
+      })
+    }
   }
   res.json(req.data)
 }
@@ -87,7 +122,7 @@ const validationFormPasswordOptional = [
 
   check('password')
     .optional({
-      nullable: true,      
+      nullable: true,
     })
     .trim()
     .notEmpty()
@@ -120,6 +155,7 @@ const validationFormPasswordOptional = [
 
 module.exports = {
   runvalidation,
+  runvalidationAuth,
   runvalidationWithres,
   validationForm,
   validationFormPasswordOptional,

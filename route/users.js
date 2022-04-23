@@ -1,6 +1,11 @@
 const express = require('express')
 const router = express.Router()
-const { runvalidation, validationForm, validationFormPasswordOptional } = require('../validation')
+const {
+  runvalidation,
+  runvalidationAuth,
+  validationForm,
+  validationFormPasswordOptional,
+} = require('../validation')
 const { authorization } = require('../validation/auth')
 const {
   emailExist,
@@ -23,17 +28,24 @@ const {
 } = require('../controllers/fileUpload')
 
 //get
-router.get('/', authorization, runvalidation, validRole, getAllUser)
+router.get('/', authorization, runvalidationAuth, validRole, getAllUser)
 
 //get-one
-router.get('/:id', getOneUser, (req, res) => {
-  res.send(res.user)
-})
+router.get(
+  '/:id',
+  authorization,
+  runvalidationAuth,
+  validRole,
+  getOneUser,
+  (req, res) => {
+    res.send(res.user)
+  }
+)
 
 //post
 const handler = [
   authorization,
-  runvalidation,
+  runvalidationAuth,
   validRole,
   upload.single('file'),
   fileTypeErrorHandler,
@@ -51,7 +63,7 @@ router.post('/', handler)
 router.patch(
   '/:id',
   authorization,
-  runvalidation,
+  runvalidationAuth,
   validRole,
   upload.single('file'),
   fileTypeErrorHandler,
@@ -70,7 +82,7 @@ router.patch(
 router.delete(
   '/:id',
   authorization,
-  runvalidation,
+  runvalidationAuth,
   validRole,
   getOneUser,
   deleteUser,
@@ -81,7 +93,7 @@ router.delete(
 router.delete(
   '/picture/:id',
   authorization,
-  runvalidation,
+  runvalidationAuth,
   validRole,
   getOneUser,
   deleteProfilePicture,
