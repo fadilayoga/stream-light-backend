@@ -1,13 +1,89 @@
 const dbo = require('../models/conn')
 
-async function getLighting(req, res, next) {
+async function getAllLighting(req, res, next) {
   try {
     const dbConnect = dbo.getDbLighting()
     const lighting = await dbConnect.find({})
     req.lightings = lighting
     next()
   } catch (err) {
+    return res.status(500).json({ message: err })
+  }
+}
+
+async function getOneProblemLog(req, res, next) {
+  let problemData
+  try {
+    const dbConnect = dbo.getDbProblemLog()
+    const result = await dbConnect
+      .findOne({ _id: req.params.id })
+      .populate({
+        path: 'log',
+        select: 'location -_id',
+        populate: {
+          path: 'lighting',
+          model: 'lighting',
+          select: 'name _id',
+        },
+      })
+    if (!result) {
+      return res.status(404).json({ message: 'problem log not found' })
+    }
+    if (!result.log) {
+      return res.status(404).json({ message: 'lighting log not found' })
+    }
+    if (result.solved) {
+      return res.json({ message: 'lighting already fixed' })
+    }
+    problemData = result
+  } catch (err) {
+    return res.status(500).json({ message: err })
+  }
+  res.problemLog = problemData
+  next()
+}
+
+async function getOneLighting(req, res, next) {
+  let lightingData
+  try {
+    const dbConnect = dbo.getDbLighting()
+    const lighting = await dbConnect.findOne({
+      _id: res.problemLog.log.lighting,
+    })
+    if (!lighting) {
+      return res.status(404).json({ message: 'lighting not found' })
+    }
+    if (lighting.status.light) {
+      return res.json({ message: 'lighting already on' })
+    }
+    lightingData = lighting
+  } catch (err) {
     return res.status(404).json({ message: err })
+  }
+  res.lighting = lightingData
+  next()
+}
+
+async function updateOneLighting(req, res, next) {
+  res.lighting.status = {
+    light: true,
+    esp: res.lighting.status.esp,
+  }
+  try {
+    await res.lighting.save()
+    next()
+  } catch (err) {
+    return res.status(500).json({ message: err })
+  }
+}
+
+async function updateOneProblemLog(res, res, next) {
+  res.problemLog.solved = new Date()
+  try {
+    const result = await res.problemLog.save()
+    res.json(result)
+  } catch (err) {
+    return res.status(500).json({ message: err })
   }
 }
 
@@ -42,7 +118,7 @@ async function getLightingLog(req, res, next) {
     ])
     res.json(result)
   } catch (err) {
-    return res.status(404).json({ message: err })
+    return res.status(500).json({ message: err })
   }
 }
 
@@ -77,7 +153,7 @@ const paginatedResults = async (req, res, next) => {
         populate: {
           path: 'lighting',
           model: 'lighting',
-          select: 'name -_id',
+          select: 'name _id',
         },
       })
       .limit(limit)
@@ -92,7 +168,11 @@ const paginatedResults = async (req, res, next) => {
 }
 
 module.exports = {
-  getLighting,
+  getOneLighting,
+  getAllLighting,
   getLightingLog,
+  updateOneLighting,
+  getOneProblemLog,
   paginatedResults,
+  updateOneProblemLog,
 }

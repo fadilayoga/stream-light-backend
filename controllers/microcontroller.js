@@ -115,8 +115,8 @@ module.exports = {
           if (result.ldr < 100) {
             if (lighting.status.light) {
               if (!result.location) {
-                this.getOneLightingLog(lighting._id).then(
-                  (logWithlastValidLocation) => {
+                this.getOneLightingLog(lighting._id)
+                  .then((logWithlastValidLocation) => {
                     this.updateLightingStatus(
                       logWithlastValidLocation,
                       callback
@@ -127,8 +127,17 @@ module.exports = {
                       .catch((err) => {
                         console.log(err)
                       })
-                  }
-                )
+                  })
+                  .catch(() => {
+                    // update status light to false
+                    this.updateLightingStatus(result, callback)
+                      .then((result) => {
+                        console.log(result)
+                      })
+                      .catch((err) => {
+                        console.log(err)
+                      })
+                  })
               } else {
                 // update status light to false
                 this.updateLightingStatus(result, callback)
@@ -211,9 +220,31 @@ module.exports = {
         .findOne({ lighting: `${lightingId}`, location: { $ne: null } })
         .sort({ timestamp: -1 })
         .then((result) => {
+          if (!result) {
+            return reject()
+          }
           resolve(result)
         })
-        .catch(() => {
+        .catch((err) => {
+          console.log(err, 'error')
+          reject('Error fetching listings!')
+        })
+    })
+  },
+
+  getOneLightingLogNullLocation: function (lightingId) {
+    return new Promise((resolve, reject) => {
+      const dbConnect = dbo.getDbLightingLog()
+      dbConnect
+        .findOne({ lighting: `${lightingId}` })
+        .sort({ timestamp: -1 })
+        .then((result) => {
+          if (!result) {
+          }
+          resolve(result)
+        })
+        .catch((err) => {
+          console.log(err, 'error')
           reject('Error fetching listings!')
         })
     })

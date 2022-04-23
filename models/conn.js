@@ -5,7 +5,7 @@ const token = new mongoose.Schema({
   registration_ids: String,
   last_modified: {
     type: Date,
-    default: () => Date.now(),
+    default: () => new Date(),
   },
 })
 
@@ -23,7 +23,7 @@ const lightingLog = new mongoose.Schema({
   location: Object,
   timestamp: {
     type: Date,
-    default: () => Date.now(),
+    default: () => new Date(),
   },
 })
 
@@ -34,13 +34,13 @@ const problemLog = new mongoose.Schema({
     ref: 'lighting_log',
   },
   problem: String,
-  solvedId: {
-    type: mongoose.Schema.ObjectId,
+  solved: {
+    type: Date,
     default: null,
   },
   timestamp: {
     type: Date,
-    default: () => Date.now(),
+    default: () => new Date(),
   },
 })
 
