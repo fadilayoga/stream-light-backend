@@ -33,7 +33,7 @@ async function getOneProblemLog(req, res, next) {
       return res.status(404).json({ message: 'lighting log not found' })
     }
     if (result.solved) {
-      return res.json({ message: 'lighting already fixed' })
+      return res.status(400).json({ message: 'lighting already fixed' })
     }
     problemData = result
   } catch (err) {
@@ -54,11 +54,11 @@ async function getOneLighting(req, res, next) {
       return res.status(404).json({ message: 'lighting not found' })
     }
     if (lighting.status.light) {
-      return res.json({ message: 'lighting already on' })
+      return res.status(400).json({ message: 'lighting already on' })
     }
     lightingData = lighting
   } catch (err) {
-    return res.status(404).json({ message: err })
+    return res.status(400).json({ message: err })
   }
   res.lighting = lightingData
   next()
@@ -77,8 +77,11 @@ async function updateOneLighting(req, res, next) {
   }
 }
 
-async function updateOneProblemLog(res, res, next) {
-  res.problemLog.solved = new Date()
+async function updateOneProblemLog(req, res, next) {
+  res.problemLog.solved = {
+    userId: req.data._id,
+    confirmed_date: new Date()
+  }
   try {
     const result = await res.problemLog.save()
     res.json(result)

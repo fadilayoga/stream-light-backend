@@ -27,6 +27,11 @@ const lightingLog = new mongoose.Schema({
   },
 })
 
+const confirmed = new mongoose.Schema({
+  userId: { type: mongoose.Schema.ObjectId, ref: 'user' },
+  confirmed_date: { type: Date, default: null },
+})
+
 const problemLog = new mongoose.Schema({
   lighting: mongoose.Schema.ObjectId,
   log: {
@@ -35,7 +40,7 @@ const problemLog = new mongoose.Schema({
   },
   problem: String,
   solved: {
-    type: Date,
+    type: confirmed,
     default: null,
   },
   timestamp: {
@@ -69,7 +74,7 @@ const usersSchema = new mongoose.Schema({
   gender: {
     type: String,
     required: true,
-    lowercase: true
+    lowercase: true,
   },
   profilePicture: {
     type: String,

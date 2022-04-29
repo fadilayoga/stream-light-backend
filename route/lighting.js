@@ -19,7 +19,7 @@ router.get('/problem-logs', authorization, runvalidationAuth, paginatedResults)
 router.post('/problem-logs/:id', authorization, runvalidationAuth, getOneProblemLog, getOneLighting, updateOneLighting, updateOneProblemLog)
 
 //get-lighting
-router.get('/lighting-all', authorization, runvalidationAuth, getAllLighting, getLightingLog)
+router.get('/lighting-all', authorization, runvalidationAuth, getLightingLog)
 
 
 module.exports = router
