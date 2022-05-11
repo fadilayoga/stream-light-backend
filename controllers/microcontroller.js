@@ -112,7 +112,7 @@ module.exports = {
           reject(err)
         } else {
           //notification condition
-          if (result.ldr < 100) {
+          if (result.ldr < 75) {
             if (lighting.status.light) {
               if (!result.location) {
                 this.getOneLightingLog(lighting._id)
