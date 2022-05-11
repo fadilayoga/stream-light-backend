@@ -77,7 +77,11 @@ async function updateUser(req, res, next) {
     const { password, ...data } = result._doc
     userData = data
     if (!filename) {
-      return res.json(data)
+      if (req.params.id == req.data._id) {
+        return res.json({ newData: data, selfUpdate: true })
+      } else {
+        return res.json({ newData: data, selfUpdate: false })
+      }    
     }
   } catch (err) {
     return res.status(400).json({

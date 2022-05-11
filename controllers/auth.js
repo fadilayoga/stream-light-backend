@@ -32,6 +32,7 @@ async function login(req, res, next) {
     })
     res.send({
       message: 'success',
+      role: user.role
     })
   } catch (err) {
     if (err) {

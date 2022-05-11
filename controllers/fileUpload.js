@@ -96,16 +96,22 @@ async function clearAllProfilePicture(req, res, next) {
   }
 }
 
-const clearOneProfilePicture = async (req, res, next) => {  
+const clearOneProfilePicture = async (req, res, next) => {
   try {
     await fs.unlink(path.join('./static/', req.deletedFile))
   } catch (err) {
     if (err.errno == -4058) {
-      return res.json({ message: 'success, file is no longer available calm :)' })
+      return res.json({
+        message: 'success, file is no longer available calm :)',
+      })
     }
     return res.status(500).json(err)
   }
-  res.json(res.user)
+  if (req.params.id == req.data._id) {
+    res.json({ newData: res.user, selfUpdate: true })
+  } else {
+    res.json({ newData: res.user, selfUpdate: false })
+  }
 }
 
 module.exports = {
