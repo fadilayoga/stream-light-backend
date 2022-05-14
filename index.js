@@ -98,10 +98,10 @@ function dbConnection() {
         })
         console.log('websocket connected')
       })
-      const client = mqtt.connect('mqtt://135.148.157.108', {
-        clientId: 'sub_to_db',
-        username: 'azure',
-        password: 'azure',
+      const client = mqtt.connect(process.env.MQTT, {
+        clientId: process.env.MQTT_CLIENT_ID,
+        username: process.env.MQTT_USERNAME,
+        password: process.env.MQTT_PASSWORD,
       })
       client.on('connect', function () {
         try {
