@@ -41,15 +41,13 @@ app.use(express.json())
 //haltOnTimedout
 app.use(haltOnTimedout)
 //history
-// app.use(history());
+app.use(history());
 //haltOnTimedout
 app.use(haltOnTimedout)
 //static images
 app.use('/static', express.static(path.join(__dirname, 'static')))
 //static vue
-// app.use('/', express.static(path.format({
-//   dir: 'D:\\NodeJS\\stream-light\\dist'
-// })))
+app.use('/', express.static(path.join(__dirname, 'dist')))
 //haltOnTimedout
 app.use(haltOnTimedout)
 
