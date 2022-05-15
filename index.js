@@ -29,6 +29,10 @@ app.use(
       'http://localhost:3000',
       'http://135.148.157.108',
       'https://135.148.157.108',
+      'http://lightstream.site',
+      'https://lightstream.site',
+      'http://www.lightstream.site',
+      'https://www.lightstream.site'
     ],
     // allowedHeaders: ['Content-Type', 'Authorization'],
   })
