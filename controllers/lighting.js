@@ -107,7 +107,7 @@ async function getLightingLog(req, res, next) {
           },
         },
       },
-      { $project: { logs: { $slice: ['$logs', 0] } } },
+      { $project: { logs: { $slice: ['$logs', -20] } } },
       {
         $lookup: {
           from: 'lightings',
