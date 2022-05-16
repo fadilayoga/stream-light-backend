@@ -267,7 +267,7 @@ module.exports = {
             },
           },
         },
-        { $project: { logs: { $slice: ['$logs', -1] } } },
+        { $project: { logs: { $slice: ['$logs', -20] } } },
         {
           $lookup: {
             from: 'lightings',
