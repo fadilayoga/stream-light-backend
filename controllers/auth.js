@@ -11,13 +11,19 @@ async function login(req, res, next) {
     if (!user) {
       throw {
         status: 404,
-        message: 'user not found',
+        message: {
+          error: 'login',
+          message: 'user not found',
+        },
       }
     }
     if (!(await bcrypt.compare(req.body.password, user.password))) {
       throw {
-        status: 400,
-        message: 'invalid credential',
+        status: 403,
+        message: {
+          error: 'login',
+          message: 'invalid credential',
+        },
       }
     }
     const token = jwt.sign(
@@ -32,13 +38,13 @@ async function login(req, res, next) {
     })
     res.send({
       message: 'success',
-      role: user.role
+      role: user.role,
     })
   } catch (err) {
     if (err) {
       res.status(err.status).send(err.message)
     } else {
-      res.status(201).send('error login')
+      res.status(500).send({ error: 'login', message: 'error login' })
     }
   }
 }
