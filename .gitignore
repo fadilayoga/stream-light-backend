@@ -1,1 +1,3 @@
 node_modules
+static/*.webp
+static/exports/*.csv
