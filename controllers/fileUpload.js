@@ -101,9 +101,11 @@ const clearOneProfilePicture = async (req, res, next) => {
     await fs.unlink(path.join('./static/', req.deletedFile))
   } catch (err) {
     if (err.errno == -4058) {
-      return res.json({
-        message: 'success, file is no longer available calm :)',
-      })
+      if (req.params.id == req.data._id) {
+        return res.json({ newData: res.user, selfUpdate: true })
+      } else {
+        return res.json({ newData: res.user, selfUpdate: false })
+      }
     }
     return res.status(500).json(err)
   }
