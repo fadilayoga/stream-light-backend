@@ -20,12 +20,7 @@ app.use(timeout('5s'))
 app.use(
   cors({
     credentials: true,
-    origin: [
-      'http://lightstream.site',
-      'https://lightstream.site',
-      'http://www.lightstream.site',
-      'https://www.lightstream.site',
-    ],
+    origin: ['https://lightstream.site'],
   })
 )
 app.use(haltOnTimedout)
@@ -66,10 +61,10 @@ app.all('/', function (req, res, next) {
 })
 
 //router
-app.use('/', require('./route/registration-token'))
-app.use('/', require('./route/lighting'))
-app.use('/auth', require('./route/auth'))
-app.use('/users', require('./route/users'))
+app.use('/', require('./routes/registration-token'))
+app.use('/', require('./routes/lighting'))
+app.use('/auth', require('./routes/auth'))
+app.use('/users', require('./routes/users'))
 
 //function timeout
 function haltOnTimedout(req, res, next) {
