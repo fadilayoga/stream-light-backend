@@ -1,17 +1,17 @@
 const express = require('express')
 const router = express.Router()
 const {
-  checkDatabaseRegistrationToken,
-  storeRegistrationToken,
-  subscribeToken,
+  checkDatabaseSubscribeTopic,
+  storeRegistrationIds,
+  subscribeTopic,
 } = require('../controllers/registrationToken')
 
 //post
 router.post(
   '/registration-token',
-  checkDatabaseRegistrationToken,
-  subscribeToken,
-  storeRegistrationToken
+  checkDatabaseSubscribeTopic,
+  subscribeTopic,
+  storeRegistrationIds
 )
 
 module.exports = router

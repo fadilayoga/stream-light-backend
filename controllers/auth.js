@@ -3,6 +3,8 @@ const jwt = require('jsonwebtoken')
 const dbo = require('../models/conn')
 
 async function login(req, res, next) {
+  let res_token
+  let res_user
   try {
     const dbConnect = dbo.UserModel()
     const user = await dbConnect.findOne({
@@ -32,21 +34,18 @@ async function login(req, res, next) {
       },
       'secret'
     )
-    res.cookie('token', token, {
-      httpOnly: true,
-      maxAge: 24 * 60 * 60 * 1000, // 1 day
-    })
-    res.send({
-      message: 'success',
-      role: user.role,
-    })
+    res_token = token
+    res_user = user
   } catch (err) {
     if (err) {
-      res.status(err.status).send(err.message)
+      return res.status(err.status).send(err.message)
     } else {
-      res.status(500).send({ error: 'login', message: 'error login' })
+      return res.status(500).send({ error: 'login', message: 'error login' })
     }
   }
+  res.token = res_token
+  res.user = res_user
+  next()
 }
 
 async function logout(req, res, next) {

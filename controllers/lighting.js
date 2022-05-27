@@ -147,7 +147,7 @@ const paginatedResults = async (req, res, next) => {
   }
 
   try {
-    results.results = await dbo
+    results.result = await dbo
       .getDbProblemLog()
       .find()
       .populate({

@@ -20,7 +20,8 @@ module.exports = {
       },
       data: {
         userID: 'UserID',
-        link: message.link,
+        ...(message.link ? { link: message.link } : {}),
+        icon: message.icon,
       },
       topic: notification_topic,
     }
@@ -118,6 +119,7 @@ module.exports = {
                 this.getOneLightingLog(lighting._id)
                   .then((logWithlastValidLocation) => {
                     this.updateLightingStatus(
+                      lighting,
                       logWithlastValidLocation,
                       callback
                     )
@@ -130,7 +132,7 @@ module.exports = {
                   })
                   .catch(() => {
                     // update status light to false
-                    this.updateLightingStatus(result, callback)
+                    this.updateLightingStatus(lighting, result, callback)
                       .then((result) => {
                         console.log(result)
                       })
@@ -140,7 +142,7 @@ module.exports = {
                   })
               } else {
                 // update status light to false
-                this.updateLightingStatus(result, callback)
+                this.updateLightingStatus(lighting, result, callback)
                   .then((result) => {
                     console.log(result)
                   })
@@ -158,7 +160,7 @@ module.exports = {
     })
   },
 
-  updateLightingStatus: function (logs, callback) {
+  updateLightingStatus: function (lighting, logs, callback) {
     return new Promise((resolve, reject) => {
       const dbConnect = dbo.getDbLighting()
       const filter = {
@@ -173,7 +175,7 @@ module.exports = {
           reject('error guys')
         } else {
           //store to problem logs
-          this.storeProblemLog(logs, callback)
+          this.storeProblemLog(lighting, logs, callback)
             .then((result) => {
               console.log(result)
             })
@@ -186,7 +188,7 @@ module.exports = {
     })
   },
 
-  storeProblemLog: function (logs, callback) {
+  storeProblemLog: function (lighting, logs) {
     // action store to the problem logs --> then push notification
     return new Promise((resolve, reject) => {
       const dbConnect = dbo.getDbProblemLog()
@@ -202,10 +204,14 @@ module.exports = {
         } else {
           //send notification
           this.sendNoification({
-            title: logs.lighting,
-            body: 'light error',
-            link: 'https://www.google.com/',
-            icon: 'https://maxst.icons8.com/vue-static/landings/page-index/products/logo/generatedPhotos.png',
+            title: lighting.name,
+            body: result.problem,
+            ...(logs.location
+              ? {
+                  link: `https://www.google.com/maps/search/?api=1&query=${logs.location.lat}%2C${logs.location.long}`,
+                }
+              : null),
+            icon: '../static/assets/notification_icon.webp',
           })
           resolve(`Added problem log with id ${result._id}`)
         }
