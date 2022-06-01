@@ -1,4 +1,5 @@
 const dbo = require('../models/conn')
+const { validateDate, getDate } = require('../lib/moment')
 
 async function getAllLighting(req, res, next) {
   try {
@@ -15,17 +16,15 @@ async function getOneProblemLog(req, res, next) {
   let problemData
   try {
     const dbConnect = dbo.getDbProblemLog()
-    const result = await dbConnect
-      .findOne({ _id: req.params.id })
-      .populate({
-        path: 'log',
-        select: 'location -_id',
-        populate: {
-          path: 'lighting',
-          model: 'lighting',
-          select: 'name _id',
-        },
-      })
+    const result = await dbConnect.findOne({ _id: req.params.id }).populate({
+      path: 'log',
+      select: 'location -_id',
+      populate: {
+        path: 'lighting',
+        model: 'lighting',
+        select: 'name _id',
+      },
+    })
     if (!result) {
       return res.status(404).json({ message: 'problem log not found' })
     }
@@ -80,11 +79,27 @@ async function updateOneLighting(req, res, next) {
 async function updateOneProblemLog(req, res, next) {
   res.problemLog.solved = {
     userId: req.data._id,
-    confirmed_date: new Date()
+    confirmed_date: new Date(),
   }
   try {
     const result = await res.problemLog.save()
-    res.json(result)
+    const problem = result.toObject()
+    res.json({
+      ...problem,
+      ...(problem.solved
+        ? {
+            solved: {
+              ...problem.solved,
+              confirmed_date: validateDate(problem.solved)
+                ? getDate(problem.solved.confirmed_date)
+                : null,
+            },
+          }
+        : { solved: null }),
+      timestamp: validateDate(problem.timestamp)
+        ? getDate(problem.timestamp)
+        : problem.timestamp,
+    })
   } catch (err) {
     return res.status(500).json({ message: err })
   }
@@ -147,7 +162,7 @@ const paginatedResults = async (req, res, next) => {
   }
 
   try {
-    results.result = await dbo
+    const problem = await dbo
       .getDbProblemLog()
       .find()
       .populate({
@@ -161,13 +176,31 @@ const paginatedResults = async (req, res, next) => {
       })
       .limit(limit)
       .skip(startIndex)
-      .exec()
-    res.json(results)
+      .lean()
+    results.results = problem.map(function (obj, i) {
+      return {
+        ...obj,
+        ...(obj.solved
+          ? {
+              solved: {
+                ...obj.solved,
+                confirmed_date: validateDate(obj.solved)
+                  ? getDate(obj.solved.confirmed_date)
+                  : null,
+              },
+            }
+          : { solved: null }),
+        timestamp: validateDate(obj.timestamp)
+          ? getDate(obj.timestamp)
+          : obj.timestamp,
+      }
+    })
   } catch (e) {
-    res.status(500).json({
+    return res.status(500).json({
       message: e.message,
     })
   }
+  res.json(results)
 }
 
 module.exports = {

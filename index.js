@@ -33,7 +33,7 @@ app.use(express.json())
 //haltOnTimedout
 app.use(haltOnTimedout)
 //history
-app.use(history())
+// app.use(history())
 //haltOnTimedout
 app.use(haltOnTimedout)
 //static images

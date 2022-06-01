@@ -1,4 +1,4 @@
 node_modules
 static/*.webp
-static/exports/*.csv
+static/exports/*
 config.env
