@@ -10,12 +10,9 @@ const PRIVATE_KEY = require('./firebase-adminsdk')
 const admin = require('firebase-admin')
 const port = process.env.PORT || 3000
 const cors = require('cors')
-const timeout = require('connect-timeout')
 const cookieParser = require('cookie-parser')
 const history = require('connect-history-api-fallback')
 
-//timeout
-app.use(timeout('5s'))
 //cors
 app.use(
   cors({
@@ -23,25 +20,16 @@ app.use(
     origin: ['https://lightstream.site'],
   })
 )
-app.use(haltOnTimedout)
 //cookie-parser middleware
 app.use(cookieParser())
-//haltOnTimedout
-app.use(haltOnTimedout)
 //JSON middleware
 app.use(express.json())
-//haltOnTimedout
-app.use(haltOnTimedout)
 //history
-// app.use(history())
-//haltOnTimedout
-app.use(haltOnTimedout)
+app.use(history())
 //static images
 app.use('/static', express.static(path.join(__dirname, 'static')))
 //static vue
 app.use('/', express.static(path.join(__dirname, 'dist')))
-//haltOnTimedout
-app.use(haltOnTimedout)
 
 //service-accounts
 var serviceAccount = PRIVATE_KEY
@@ -65,11 +53,6 @@ app.use('/', require('./routes/registration-token'))
 app.use('/', require('./routes/lighting'))
 app.use('/auth', require('./routes/auth'))
 app.use('/users', require('./routes/users'))
-
-//function timeout
-function haltOnTimedout(req, res, next) {
-  if (!req.timedout) next()
-}
 
 // perform a database connection when the server starts
 function dbConnection() {
