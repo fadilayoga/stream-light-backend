@@ -184,9 +184,7 @@ function json2excel(req, res, next) {
     if (err) {
       return console.error(err)
     } else {
-      res.send(
-        `${req.protocol}://${req.get('host')}/static/exports/${fileName}.xlsx`
-      )
+      res.download(filePath + '.xlsx')
     }
   })
   setTimeout(function () {
@@ -213,9 +211,7 @@ async function downloadData(req, res, next) {
   } catch (err) {
     return res.json({ err, message: 'download file' })
   }
-  res.send(
-    `${req.protocol}://${req.get('host')}/static/exports/${fileName}.csv`
-  )
+  res.download(filePath + res.format)
 }
 
 module.exports = {
