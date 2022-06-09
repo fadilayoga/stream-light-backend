@@ -182,7 +182,7 @@ function json2excel(req, res, next) {
   })
   wb.write(filePath + '.xlsx', function (err, stats) {
     if (err) {
-      return console.error(err)
+      return res.json({ error: err, message: 'export xlsx' })
     } else {
       res.download(filePath + '.xlsx')
     }
@@ -209,7 +209,7 @@ async function downloadData(req, res, next) {
       })
     }, 10000)
   } catch (err) {
-    return res.json({ err, message: 'download file' })
+    return res.json({ error: err, message: 'export csv' })
   }
   res.download(filePath + res.format)
 }
